@@ -1,0 +1,9 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "com.keerthijewellers.app",
+      "package_name": "com.keerthijewellers.app",
+      "sha256_cert_fingerprints":
+      ["D7:17:08:A2:AD:91:92:44:80:41:1A:79:D2:07:2A:AE:D9:5D:3A:EC:AF:20:B6:AD:B0:27:BB:A2:2C:3A:EA:29"]
+    }
+  }]

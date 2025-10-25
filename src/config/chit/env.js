@@ -25,6 +25,7 @@ const config = {
   CASH_FREE_URL:process.env.CASH_FREE_URL,
   AWS_DISPLAY_URL:process.env.AWS_DISPLAY_URL,
   DISPLAY_IMG_URL:`${process.env.AWS_DISPLAY_URL}${process.env.AWS_LOCAL_PATH}`,
+  NOTIFICATION_NAME:process.env.NOTIFICATION_NAME,
 };
 
 export default config; 

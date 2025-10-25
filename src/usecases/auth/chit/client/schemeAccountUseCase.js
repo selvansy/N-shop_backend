@@ -7,6 +7,7 @@ import isNotificationEnabled from "../../../../utils/notificationEnableChecket.j
 import SaveNotificationUsecase from "./saveNotificationUsecase.js";
 import SaveNotificationRepo from "../../../../infrastructure/repositories/chit/saveNotificationRepo.js";
 import EmployeeRepository from "../../../../infrastructure/repositories/chit/EmployeeRepository.js";
+import config from "../../../../config/chit/env.js";
 
 
 const customerRepo = new CustomerRepository();
@@ -55,7 +56,7 @@ class SchemeAccountUseCase {
       const input = {
         recipients: [data.id_customer],
         title: "Scheme Account Created",
-        message: `Congratulations! Your ${schemeInfo.id_scheme.scheme_name} Scheme Account has been successfully created at KEERTHI JWELLERS.`,
+        message: `Congratulations! Your ${schemeInfo.id_scheme.scheme_name} Scheme Account has been successfully created at ${config.NOTIFICATION_NAME}`,
         channel: "push",
       }
       await smsService.sendNotification(input);
@@ -109,7 +110,7 @@ class SchemeAccountUseCase {
         const input= {
           recipients: [data.referral_id],
           title: "Scheme Account Created",
-          message: `Thank you for referring ${data?.customer_name} to KEERTHI JEWELERS! Your referral has successfully created a ${schemeInfo.id_scheme.scheme_name} Scheme Account.`,
+          message: `Thank you for referring ${data?.customer_name} to ${config.NOTIFICATION_NAME}! Your referral has successfully created a ${schemeInfo.id_scheme.scheme_name} Scheme Account.`,
           channel: "push",
         }
         await smsService.sendNotification(input);
@@ -1207,7 +1208,7 @@ class SchemeAccountUseCase {
         const input = {
           recipients: [data.id_customer],
           title: "Scheme Account Closed",
-          message: `Your ${schemeData.scheme_name} Scheme Account with KEERTHI JWELLERS has been successfully closed. We appreciate your association with us`,
+          message: `Your ${schemeData.scheme_name} Scheme Account with ${config.NOTIFICATION_NAME} has been successfully closed. We appreciate your association with us`,
           channel: "push",
         }
         await smsService.sendNotification(input);

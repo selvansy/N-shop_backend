@@ -246,7 +246,7 @@ class OrderUseCase {
         categoryId: item.categoryId, // not in response (set later if needed)
         subCategoryId: item.subCategoryId, // not in response
         collectionId: item.collectionId, // not in response
-        status: "Payment Pending", // default
+        status: "pending", // default
         trackingNumber: null,
         shippedAt: new Date(),
         estimatedDeliveryDays,

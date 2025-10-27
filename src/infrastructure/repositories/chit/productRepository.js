@@ -1672,6 +1672,7 @@ class ProductRepository {
   try {
     const pipeline = [
       { $match: filter },
+      { $sort: { createdAt: -1 } },
       {
         $lookup: {
           from: "branches",

@@ -228,7 +228,7 @@ class OrderUseCase {
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
-        status: "Pending",
+        status: "Payment Pending",
         deliveryAddress: addressId,
         estimatedDeliveryDays,
         active: false,
@@ -246,7 +246,7 @@ class OrderUseCase {
         categoryId: item.categoryId, // not in response (set later if needed)
         subCategoryId: item.subCategoryId, // not in response
         collectionId: item.collectionId, // not in response
-        status: "pending", // default
+        status: "Payment Pending", // default
         trackingNumber: null,
         shippedAt: new Date(),
         estimatedDeliveryDays,

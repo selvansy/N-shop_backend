@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 const categorySchema= new mongoose.Schema({
     id_branch:{
         type:mongoose.Schema.Types.ObjectId,
-        required:true,
+        // required:true,
         ref:'Branch'
     },
     id_metal:{
@@ -31,6 +31,11 @@ const categorySchema= new mongoose.Schema({
     is_deleted:{
         type:Boolean,
         default:false
+    },
+    image:{
+        type:String,
+        // default:null
+        required:true
     }
 },{
     timestamps:true

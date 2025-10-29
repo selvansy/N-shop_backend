@@ -155,7 +155,7 @@ class OrderUseCase {
   }
 
   
-  async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
+ async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
     try {
       if (!userData._id) {
         throw new Error("User ID not found");
@@ -229,7 +229,7 @@ class OrderUseCase {
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
-        status: "Payment Pending",
+        status: "Placed",
         deliveryAddress: addressId,
         estimatedDeliveryDays,
         active: false,
@@ -254,22 +254,22 @@ class OrderUseCase {
         returnStatus: "none",
         refundAmount: 0,
       }));
-      const createOrder = await this.orderRepository.createOrder(
-        orderData,
-        orderItems
-      );
-
       const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
-        createOrder,
+       { order: orderData, items: orderItems },
         token
       );
-
-      if (!paymentData) {
+      if (!paymentData || paymentData.success === false || !paymentData.data || !paymentData.data.session) {
         return {
           success: false,
           message: "Failed to create order",
         };
       }
+      const createOrder = await this.orderRepository.createOrder(
+        orderData,
+        orderItems
+      );
+
+
 
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,
@@ -279,7 +279,11 @@ class OrderUseCase {
       return {
         success: true,
         message: "Your order has been placed successfully",
-        data: paymentData?.data,
+        // data: paymentData?.data,
+        data: {
+          order: createOrder,
+          payment: paymentData?.data,
+        },
       };
     } catch (error) {
       console.error(error);

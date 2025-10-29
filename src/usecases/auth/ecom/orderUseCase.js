@@ -155,7 +155,8 @@ class OrderUseCase {
   }
 
   
- async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
+
+  async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
     try {
       if (!userData._id) {
         throw new Error("User ID not found");
@@ -224,56 +225,53 @@ class OrderUseCase {
         totalDiscount: cartItems.overAllAmount.totalDiscount,
         shippingFee: shppingCharge,
         totalAmount: cartItems.overAllAmount.totalDiscount + shppingCharge,
+        // couponCode: "NEWUSER100",
+        // payment: "68899df2c34cf80f45b7ed1c",
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
-        status: "Placed",
+        status: "Payment Pending",
         deliveryAddress: addressId,
         estimatedDeliveryDays,
         active: false,
       };
       const orderItems = cartItems.items.map((item) => ({
-        productId: item.productId,
-        sizeId: item.sizeId,
+        productId: item.productId, // from API
+        sizeId: item.sizeId, // mapping `itemId` → `sizeId`
         productName: item.productName,
-        sku: item.sku,
+        sku: item.sku, // not in response
         image: item.image,
         grossWeight: item.grossWt,
         price: item.price,
         quantity: item.qty,
         discountAmount: item.discount,
-        categoryId: item.categoryId,
-        subCategoryId: item.subCategoryId,
-        collectionId: item.collectionId,
-        status: "pending",
+        categoryId: item.categoryId, // not in response (set later if needed)
+        subCategoryId: item.subCategoryId, // not in response
+        collectionId: item.collectionId, // not in response
+        status: "pending", // default
         trackingNumber: null,
         shippedAt: new Date(),
         estimatedDeliveryDays,
         returnStatus: "none",
         refundAmount: 0,
       }));
-
-      
-      const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
-       { order: orderData, items: orderItems },
-        token
-      );
-
-      
-      if (!paymentData || paymentData.success === false || !paymentData.data || !paymentData.data.session) {
-        return {
-          success: false,
-          message: "Payment Failed - Unable to process order",
-        };
-      }
-
-     
       const createOrder = await this.orderRepository.createOrder(
         orderData,
         orderItems
       );
 
-      
+      const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
+        createOrder,
+        token
+      );
+
+      if (!paymentData) {
+        return {
+          success: false,
+          message: "Failed to create order",
+        };
+      }
+
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,
         token?._id
@@ -282,16 +280,14 @@ class OrderUseCase {
       return {
         success: true,
         message: "Your order has been placed successfully",
-        data: {
-          order: createOrder,
-          payment: paymentData?.data,
-        },
+        data: paymentData?.data,
       };
     } catch (error) {
       console.error(error);
       throw new Error(`Failed to place order: ${error.message}`);
     }
   }
+
    
   async getMyOrder(userData) {
     try {

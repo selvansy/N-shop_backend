@@ -224,8 +224,6 @@ class OrderUseCase {
         totalDiscount: cartItems.overAllAmount.totalDiscount,
         shippingFee: shppingCharge,
         totalAmount: cartItems.overAllAmount.totalDiscount + shppingCharge,
-        // couponCode: "NEWUSER100",
-        // payment: "68899df2c34cf80f45b7ed1c",
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
@@ -235,42 +233,47 @@ class OrderUseCase {
         active: false,
       };
       const orderItems = cartItems.items.map((item) => ({
-        productId: item.productId, // from API
-        sizeId: item.sizeId, // mapping `itemId` → `sizeId`
+        productId: item.productId,
+        sizeId: item.sizeId,
         productName: item.productName,
-        sku: item.sku, // not in response
+        sku: item.sku,
         image: item.image,
         grossWeight: item.grossWt,
         price: item.price,
         quantity: item.qty,
         discountAmount: item.discount,
-        categoryId: item.categoryId, // not in response (set later if needed)
-        subCategoryId: item.subCategoryId, // not in response
-        collectionId: item.collectionId, // not in response
-        status: "pending", // default
+        categoryId: item.categoryId,
+        subCategoryId: item.subCategoryId,
+        collectionId: item.collectionId,
+        status: "pending",
         trackingNumber: null,
         shippedAt: new Date(),
         estimatedDeliveryDays,
         returnStatus: "none",
         refundAmount: 0,
       }));
+
+      
       const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
        { order: orderData, items: orderItems },
         token
       );
+
+      
       if (!paymentData || paymentData.success === false || !paymentData.data || !paymentData.data.session) {
         return {
           success: false,
-          message: "Failed to create order",
+          message: "Payment Failed - Unable to process order",
         };
       }
+
+     
       const createOrder = await this.orderRepository.createOrder(
         orderData,
         orderItems
       );
 
-
-
+      
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,
         token?._id
@@ -279,7 +282,6 @@ class OrderUseCase {
       return {
         success: true,
         message: "Your order has been placed successfully",
-        // data: paymentData?.data,
         data: {
           order: createOrder,
           payment: paymentData?.data,

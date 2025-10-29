@@ -154,7 +154,7 @@ class OrderUseCase {
     }
   }
 
-  async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
+   async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
     try {
       if (!userData._id) {
         throw new Error("User ID not found");
@@ -198,13 +198,13 @@ class OrderUseCase {
         };
       }
       const estimatedDeliveryDays = pincodeData?.estimatedDeliveryDays;
-      const isPaid = true;
-      if (!isPaid) {
-        return {
-          success: false,
-          message: "Payment Failed",
-        };
-      }
+      // const isPaid = true;
+      // if (!isPaid) {
+      //   return {
+      //     success: false,
+      //     message: "Payment Failed",
+      //   };
+      // }
       const shppingCharge = 0;
       const raw = `${userData._id}${Date.now()}`;
       const transactionId = crypto
@@ -228,7 +228,7 @@ class OrderUseCase {
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
-        status: "Payment Pending",
+        status: "Placed",
         deliveryAddress: addressId,
         estimatedDeliveryDays,
         active: false,
@@ -253,22 +253,23 @@ class OrderUseCase {
         returnStatus: "none",
         refundAmount: 0,
       }));
-      const createOrder = await this.orderRepository.createOrder(
-        orderData,
-        orderItems
-      );
-
+      
       const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
-        createOrder,
+        orderData,
         token
       );
-
+      
       if (!paymentData) {
         return {
           success: false,
           message: "Failed to create order",
         };
       }
+
+      const createOrder = await this.orderRepository.createOrder(
+        orderData,
+        orderItems
+      );
 
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,

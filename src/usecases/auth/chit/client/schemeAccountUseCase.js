@@ -56,7 +56,7 @@ class SchemeAccountUseCase {
       const input = {
         recipients: [data.id_customer],
         title: "Scheme Account Created",
-        message: `Congratulations! Your ${schemeInfo.id_scheme.scheme_name} Scheme Account has been successfully created at ${config.NOTIFICATION_NAME}`,
+        message: `Congratulations! Your ${schemeInfo.id_scheme.scheme_name} Scheme Account has been successfully created at ${config.NOTIFICATION_NAME}.`,
         channel: "push",
       }
       await smsService.sendNotification(input);

@@ -231,7 +231,7 @@ class SchemeUseCase {
     }
 
     const s3Configs = await this.s3Helper(result.id_branch);
-    result.pathUrl = `${s3Configs.s3display_url}${config.AWS_LOCAL_PATH}}classification/`;
+    result.pathUrl = `${s3Configs.s3display_url}${config.AWS_LOCAL_PATH}classification/`;
 
     return {
       success: true,

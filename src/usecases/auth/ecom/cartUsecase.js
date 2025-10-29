@@ -14,7 +14,7 @@ class CartUseCase {
         throw new Error("User ID not found");
       }
       const findUser = await this.customerRepository.findInfo(userData._id);
-      if (findUser.active === false) {
+      if (findUser.active===false) {
         throw new Error("User account is inactive. Please contact support.");
       }
 

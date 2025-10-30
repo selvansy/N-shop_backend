@@ -275,8 +275,6 @@ class OrderUseCase {
         orderItems
       );
     }
-      
-      console.log(createOrder)
 
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,

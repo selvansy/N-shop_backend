@@ -136,7 +136,7 @@ class OrderPaymentUsecase {
           customer_id: token._id,
           customer_name: `${token.firstname} ${token.lastname}`,
           customer_email: order.email || token.email || "customer@example.com",
-          customer_phone: order.phone || token.mobile.toString(),
+          customer_phone: (order.phone || token.mobile).toString(),
         },
         order_meta: {
           return_url: extraData?.return_url || "https://example.com/return",

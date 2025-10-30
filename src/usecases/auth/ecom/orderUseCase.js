@@ -230,7 +230,7 @@ class OrderUseCase {
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
-        status: "Payment Pending",
+        status: "Placed",
         deliveryAddress: addressId,
         estimatedDeliveryDays,
         active: false,
@@ -255,23 +255,26 @@ class OrderUseCase {
         returnStatus: "none",
         refundAmount: 0,
       }));
-      const createOrder = await this.orderRepository.createOrder(
-        orderData,
-        orderItems
-      );
-
+      
+      
       const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
-        createOrder,
+        {
+          order: orderData,
+          items: orderItems
+        },
         token
       );
-
+      
       if (!paymentData) {
         return {
           success: false,
           message: "Failed to create order",
         };
       }
-
+      const createOrder = await this.orderRepository.createOrder(
+        orderData,
+        orderItems
+      );
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,
         token?._id

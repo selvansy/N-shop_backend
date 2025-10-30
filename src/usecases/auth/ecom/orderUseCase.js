@@ -268,10 +268,13 @@ class OrderUseCase {
           message: "Failed to create order",
         };
       }
+     
+      if(paymentData.success === true){
       const createOrder = await this.orderRepository.createOrder(
         orderData,
         orderItems
       );
+    }
       
       console.log(createOrder)
 

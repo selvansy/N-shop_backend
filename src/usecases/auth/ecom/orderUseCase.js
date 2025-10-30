@@ -156,7 +156,7 @@ class OrderUseCase {
 
   
 
-  async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
+ async placeOrder(userData, addressId, token, redeemedSchemeAccounts) {
     try {
       if (!userData._id) {
         throw new Error("User ID not found");
@@ -230,7 +230,7 @@ class OrderUseCase {
         savedAmount:
           cartItems.overAllAmount.totalPrice -
           cartItems.overAllAmount.totalDiscount,
-        status: "Placed",
+        status: "Payment Pending",
         deliveryAddress: addressId,
         estimatedDeliveryDays,
         active: false,
@@ -255,26 +255,23 @@ class OrderUseCase {
         returnStatus: "none",
         refundAmount: 0,
       }));
-      
-      
+      const createOrder = await this.orderRepository.createOrder(
+        orderData,
+        orderItems
+      );
+
       const paymentData = await this.orderpaymentUsecase.orderPaymentCreation(
-        {
-          order: orderData,
-          items: orderItems
-        },
+        createOrder,
         token
       );
-      
+
       if (!paymentData) {
         return {
           success: false,
           message: "Failed to create order",
         };
       }
-      const createOrder = await this.orderRepository.createOrder(
-        orderData,
-        orderItems
-      );
+
       await this.schemeAccountRepo.closeSchemeAccount(
         redeemedSchemeAccounts,
         token?._id
@@ -290,7 +287,6 @@ class OrderUseCase {
       throw new Error(`Failed to place order: ${error.message}`);
     }
   }
-
    
   async getMyOrder(userData) {
     try {

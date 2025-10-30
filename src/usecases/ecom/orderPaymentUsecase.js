@@ -22,7 +22,7 @@ class OrderPaymentUsecase {
     this.orderRepo = new OrderRepository();
   }
 
-  async orderPaymentCreation(orderData, token = null, extraData = null) {
+ async orderPaymentCreation(orderData, token = null, extraData = null) {
     try {
       if (!orderData || !orderData.order) {
         return {
@@ -51,6 +51,7 @@ class OrderPaymentUsecase {
       let totalAmount = 0;
       let paymentIds = [];
 
+
       const transactionDetails = {
         transactionId: transactionId,
         idCustomer: token?._id,
@@ -63,10 +64,46 @@ class OrderPaymentUsecase {
         paymentStatus: 2,
       };
 
-      const saveTransactionDetails =
-        await this.OrderTransactionDetailsRepository.addTransactionDetails(
-          transactionDetails
-        );
+
+      const paymentReceipt = `RECEIPT-${Date.now()}`;
+
+      // Calculate amounts (just calculations, no database saves)
+      for (const item of items) {
+        const amount = item.price * item.quantity - (item.discountAmount || 0);
+        totalAmount += Number(amount);
+      }
+
+      const totalData = this.sanitizeAmount(order.totalDiscount);
+
+
+      const customerOrderData = {
+        order_id: transactionId,
+        order_amount: totalData,
+        order_currency: "INR",
+        customer_details: {
+          customer_id: token._id,
+          customer_name: `${token.firstname} ${token.lastname}`,
+          customer_email: order.email || token.email || "customer@example.com",
+          customer_phone: (order.phone || token.mobile).toString(),
+        },
+        order_meta: {
+          return_url: extraData?.return_url || "https://example.com/return",
+        },
+      };
+
+      const createdOrder = await this.createOrder(customerOrderData);
+
+
+      if (!createdOrder || !createdOrder.cf_order_id || !createdOrder.payment_session_id) {
+        return {
+          success: false,
+          message: "Failed to create payment order",
+          error: createdOrder?.message || "Unknown error from payment gateway"
+        };
+      }
+
+
+      const saveTransactionDetails = await this.OrderTransactionDetailsRepository.addTransactionDetails(transactionDetails);
 
       if (!saveTransactionDetails) {
         return {
@@ -75,8 +112,6 @@ class OrderPaymentUsecase {
         };
       }
 
-      // Generate a payment receipt
-      const paymentReceipt = `RECEIPT-${Date.now()}`;
 
       for (const item of items) {
         const amount = item.price * item.quantity - (item.discountAmount || 0);
@@ -97,9 +132,7 @@ class OrderPaymentUsecase {
           discount: item.discountAmount || 0,
         };
 
-        const savedPayment = await this.paymentRepository.addPayment(
-          paymentData
-        );
+        const savedPayment = await this.paymentRepository.addPayment(paymentData);
 
         if (!savedPayment) {
           return { success: false, message: "Failed to save payment" };
@@ -123,27 +156,7 @@ class OrderPaymentUsecase {
         };
 
         await this.transactionRepository.addTransaction(subtransaction);
-        totalAmount += Number(amount);
       }
-
-      const totalData = this.sanitizeAmount(order.totalDiscount);
-
-      const customerOrderData = {
-        order_id: transactionId,
-        order_amount: totalData,
-        order_currency: "INR",
-        customer_details: {
-          customer_id: token._id,
-          customer_name: `${token.firstname} ${token.lastname}`,
-          customer_email: order.email || token.email || "customer@example.com",
-          customer_phone: (order.phone || token.mobile).toString(),
-        },
-        order_meta: {
-          return_url: extraData?.return_url || "https://example.com/return",
-        },
-      };
-
-      const createdOrder = await this.createOrder(customerOrderData);
 
       const paymentOrderDetails = {
         orderId: transactionId,
@@ -162,7 +175,7 @@ class OrderPaymentUsecase {
       await this.paymentOrderRepo.addPaymentOrder(paymentOrderDetails);
 
       return {
-        success:true,
+        success: true,
         data: {
           session: createdOrder?.payment_session_id,
           orderId: transactionId,
